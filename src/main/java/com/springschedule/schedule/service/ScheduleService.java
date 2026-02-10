@@ -10,8 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.springschedule.common.util.InputValidator.requireMaxLength;
-import static com.springschedule.common.util.InputValidator.requireText;
 
 @Service
 @RequiredArgsConstructor
@@ -41,12 +39,6 @@ public class ScheduleService {
     // 일정을 생성
     @Transactional
     public CreateScheduleResponse save(CreateScheduleRequest request) {
-
-        requireText(request.getTitle(), "일정 제목");
-        requireMaxLength(request.getTitle(), "일정 제목", 30);
-        requireText(request.getTitle(), "일정 내용");
-        requireMaxLength(request.getTitle(), "일정 내용", 200);
-        requireText(request.getAuthorName(), "작성자 이름");
 
         // 생성자 호출
         Schedule schedule = new Schedule(
@@ -97,11 +89,6 @@ public class ScheduleService {
     // 일정 수정
     @Transactional
     public UpdateScheduleResponse update(Long scheduleId, UpdateScheduleRequest request) {
-
-        requireText(request.getTitle(), "일정 제목");
-        requireMaxLength(request.getTitle(), "일정 제목", 30);
-        requireText(request.getTitle(), "일정 내용");
-        requireMaxLength(request.getTitle(), "일정 내용", 200);
 
         Schedule schedule = getScheduleOrThrow(scheduleId);
 

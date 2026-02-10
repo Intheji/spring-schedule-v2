@@ -3,6 +3,7 @@ package com.springschedule.common.exception;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -15,12 +16,7 @@ public class GlobalExceptionHandler {
             IllegalArgumentException e,
             HttpServletRequest request
     ) {
-        ErrorResponse body = new ErrorResponse(
-                HttpStatus.BAD_REQUEST.value(),
-                e.getMessage(),
-                request.getRequestURI()
-        );
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+        return error(HttpStatus.BAD_REQUEST, e.getMessage(), request);
     }
 
     // 404 일정 없음 등
@@ -29,11 +25,36 @@ public class GlobalExceptionHandler {
             IllegalStateException e,
             HttpServletRequest request
     ) {
+        return error(HttpStatus.NOT_FOUND, e.getMessage(), request);
+    }
+
+    // 400 Bean Validation 실패 예외 처리
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidation(
+            MethodArgumentNotValidException e,
+            HttpServletRequest request
+    ) {
+        String message = e.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .findFirst()
+                .map(fieldError -> fieldError.getDefaultMessage())
+                .orElse("요청 값이 유효하지 않음");
+
+        return error(HttpStatus.BAD_REQUEST, message, request);
+    }
+
+    // 공통 응답 중복으로 메서드로 뺌
+    private ResponseEntity<ErrorResponse> error(
+            HttpStatus status,
+            String message,
+            HttpServletRequest request
+    ) {
         ErrorResponse body = new ErrorResponse(
-                HttpStatus.NOT_FOUND.value(),
-                e.getMessage(),
+                status.value(),
+                message,
                 request.getRequestURI()
         );
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+        return ResponseEntity.status(status).body(body);
     }
 }
