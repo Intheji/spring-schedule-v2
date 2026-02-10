@@ -1,8 +1,8 @@
 package com.springschedule.user.controller;
 
 import com.springschedule.user.dto.CreateUserRequest;
-import com.springschedule.user.dto.CreateUserResponse;
-import com.springschedule.user.dto.GetUserResponse;
+import com.springschedule.user.dto.UpdateUserRequest;
+import com.springschedule.user.dto.UserResponse;
 import com.springschedule.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,21 +20,38 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<CreateUserResponse> create(
+    public ResponseEntity<UserResponse> create(
             @Valid @RequestBody CreateUserRequest request
     ) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.save(request));
     }
 
     @GetMapping
-    public ResponseEntity<List<GetUserResponse>> getUsers() {
+    public ResponseEntity<List<UserResponse>> getUsers() {
         return ResponseEntity.status(HttpStatus.OK).body(userService.findAll());
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<GetUserResponse> getUser(
+    public ResponseEntity<UserResponse> getUser(
             @PathVariable Long userId
     ) {
         return ResponseEntity.status(HttpStatus.OK).body(userService.findOne(userId));
     }
+
+    @PatchMapping("/{userId}")
+    public ResponseEntity<UserResponse> update(
+            @PathVariable Long userId,
+            @Valid @RequestBody UpdateUserRequest request
+    ) {
+        return ResponseEntity.status(HttpStatus.OK).body(userService.update(userId, request));
+    }
+
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<Void> delete(
+            @PathVariable Long userId
+    ) {
+        userService.delete(userId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
 }

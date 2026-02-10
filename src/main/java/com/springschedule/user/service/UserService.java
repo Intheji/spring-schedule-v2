@@ -1,11 +1,11 @@
 package com.springschedule.user.service;
 
-import com.springschedule.user.dto.CreateUserRequest;
-import com.springschedule.user.dto.CreateUserResponse;
-import com.springschedule.user.dto.GetUserResponse;
+import com.springschedule.user.dto.*;
 import com.springschedule.user.entity.User;
 import com.springschedule.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,7 +18,7 @@ public class UserService {
     private final UserRepository userRepository;
 
     @Transactional
-    public CreateUserResponse save(CreateUserRequest request) {
+    public UserResponse save(CreateUserRequest request) {
 
         User user = new User(
                 request.getUserName(),
@@ -27,37 +27,48 @@ public class UserService {
 
         User saved = userRepository.save(user);
 
-        return new CreateUserResponse(
-                saved.getId(),
-                saved.getUserName(),
-                saved.getEmail(),
-                saved.getCreatedAt(),
-                saved.getModifiedAt()
-        );
+        return toResponse(saved);
     }
 
     @Transactional(readOnly = true)
-    public List<GetUserResponse> findAll() {
+    public List<UserResponse> findAll() {
         return userRepository.findAll().stream()
                 .map(this::toResponse)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public GetUserResponse findOne(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(
-                () -> new IllegalStateException("유저가 존재하지 않는데요?")
-        );
+    public UserResponse findOne(Long userId) {
+        User user = getUserOrThrow(userId);
         return toResponse(user);
     }
 
-    private GetUserResponse toResponse(User user) {
-        return new GetUserResponse(
+    @Transactional
+    public UserResponse update(Long userId, UpdateUserRequest request) {
+        User user = getUserOrThrow(userId);
+        user.update(request.getUserName(), request.getEmail());
+        return toResponse(user);
+    }
+
+    @Transactional
+    public void delete(Long userId) {
+        User user = getUserOrThrow(userId);
+        userRepository.delete(user);
+    }
+
+    private UserResponse toResponse(User user) {
+        return new UserResponse(
                 user.getId(),
                 user.getUserName(),
                 user.getEmail(),
                 user.getCreatedAt(),
                 user.getModifiedAt()
+        );
+    }
+
+    private User getUserOrThrow(Long userId) {
+        return userRepository.findById(userId).orElseThrow(
+                () -> new IllegalStateException("유저가 존재하지 않는데요?")
         );
     }
 }
