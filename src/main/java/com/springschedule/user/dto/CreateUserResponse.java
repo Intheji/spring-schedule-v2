@@ -1,4 +1,4 @@
-package com.springschedule.user.controller;
+package com.springschedule.user.dto;
 
 import lombok.Getter;
 
