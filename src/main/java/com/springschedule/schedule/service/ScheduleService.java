@@ -3,6 +3,8 @@ package com.springschedule.schedule.service;
 import com.springschedule.schedule.dto.*;
 import com.springschedule.schedule.entity.Schedule;
 import com.springschedule.schedule.repository.ScheduleRepository;
+import com.springschedule.user.entity.User;
+import com.springschedule.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,35 +18,21 @@ import java.util.List;
 public class ScheduleService {
 
     private final ScheduleRepository scheduleRepository;
+    private final UserRepository userRepository;
 
-    // 일정 조회하고 없으면 예외
-    private Schedule getScheduleOrThrow(Long scheduleId) {
-        return scheduleRepository.findById(scheduleId).orElseThrow(
-                () -> new IllegalStateException("존재하지 않는 일정입니다")
-        );
-    }
 
-    // entity를 응답 dto 변환
-    private GetScheduleResponse toGetScheduleResponse(Schedule schedule) {
-        return new GetScheduleResponse(
-                schedule.getId(),
-                schedule.getTitle(),
-                schedule.getContent(),
-                schedule.getAuthorName(),
-                schedule.getCreatedAt(),
-                schedule.getModifiedAt()
-        );
-    }
 
     // 일정을 생성
     @Transactional
     public CreateScheduleResponse save(CreateScheduleRequest request) {
 
+        User user = getUserOrThrow(request.getUserId());
+
         // 생성자 호출
         Schedule schedule = new Schedule(
+                user,
                 request.getTitle(),
-                request.getContent(),
-                request.getAuthorName()
+                request.getContent()
         );
 
         // db 저장
@@ -54,7 +42,7 @@ public class ScheduleService {
                 saved.getId(),
                 saved.getTitle(),
                 saved.getContent(),
-                saved.getAuthorName(),
+                saved.getUser().getUserName(),
                 saved.getCreatedAt(),
                 saved.getModifiedAt()
         );
@@ -76,7 +64,7 @@ public class ScheduleService {
         if (authorName == null || authorName.isBlank()) {
             schedules = scheduleRepository.findAllByOrderByModifiedAtDesc();
         } else {
-            schedules = scheduleRepository.findByAuthorNameOrderByModifiedAtDesc(authorName);
+            schedules = scheduleRepository.findByUser_UserNameOrderByModifiedAtDesc(authorName);
         }
 
         List<GetScheduleResponse> responses = new ArrayList<>();
@@ -99,16 +87,42 @@ public class ScheduleService {
                 schedule.getId(),
                 schedule.getTitle(),
                 schedule.getContent(),
-                schedule.getAuthorName(),
+                schedule.getUser().getUserName(),
                 schedule.getCreatedAt(),
                 schedule.getModifiedAt()
         );
     }
+
 
     // 일정 삭제
     @Transactional
     public void delete(Long scheduleId) {
         Schedule schedule = getScheduleOrThrow(scheduleId);
         scheduleRepository.delete(schedule);
+    }
+
+    // 일정 조회하고 없으면 예외
+    private Schedule getScheduleOrThrow(Long scheduleId) {
+        return scheduleRepository.findById(scheduleId).orElseThrow(
+                () -> new IllegalStateException("존재하지 않는 일정입니다")
+        );
+    }
+
+    // entity를 응답 dto 변환
+    private GetScheduleResponse toGetScheduleResponse(Schedule schedule) {
+        return new GetScheduleResponse(
+                schedule.getId(),
+                schedule.getTitle(),
+                schedule.getContent(),
+                schedule.getUser().getUserName(),
+                schedule.getCreatedAt(),
+                schedule.getModifiedAt()
+        );
+    }
+
+    private User getUserOrThrow(Long userId) {
+        return userRepository.findById(userId).orElseThrow(
+                () -> new IllegalStateException("유저가 없음..")
+        );
     }
 }

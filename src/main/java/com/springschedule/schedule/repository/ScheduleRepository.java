@@ -11,5 +11,5 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
     List<Schedule> findAllByOrderByModifiedAtDesc();
 
     // 쿼리 메서드로 작성자명 조회 - 수정일 내림차순
-    List<Schedule> findByAuthorNameOrderByModifiedAtDesc(String authorName);
+    List<Schedule> findByUser_UserNameOrderByModifiedAtDesc(String userName);
 }
