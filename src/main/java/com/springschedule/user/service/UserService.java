@@ -22,7 +22,8 @@ public class UserService {
 
         User user = new User(
                 request.getUserName(),
-                request.getEmail()
+                request.getEmail(),
+                request.getPassword()
         );
 
         User saved = userRepository.save(user);
@@ -46,7 +47,10 @@ public class UserService {
     @Transactional
     public UserResponse update(Long userId, UpdateUserRequest request) {
         User user = getUserOrThrow(userId);
-        user.update(request.getUserName(), request.getEmail());
+        user.update(
+                request.getUserName(),
+                request.getEmail()
+        );
         return toResponse(user);
     }
 
