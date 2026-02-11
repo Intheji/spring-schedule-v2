@@ -1,6 +1,7 @@
 package com.springschedule.auth.controller;
 
 import com.springschedule.auth.dto.LoginRequest;
+import com.springschedule.config.PasswordEncoder;
 import com.springschedule.user.entity.User;
 import com.springschedule.user.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     // 로그인
     @PostMapping("/login")
@@ -31,7 +33,7 @@ public class AuthController {
         }
 
         // 비밀번호 틀리면 로그인 실패
-        if (!user.getPassword().matches(request.getPassword())) {
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
         throw new IllegalArgumentException("님 비밀번호 틀림");
         }
 
