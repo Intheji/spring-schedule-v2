@@ -2,6 +2,7 @@ package com.springschedule.comment.controller;
 
 import com.springschedule.comment.dto.CommentResponse;
 import com.springschedule.comment.dto.CreateCommentRequest;
+import com.springschedule.comment.dto.UpdateCommentRequest;
 import com.springschedule.comment.service.CommentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,5 +32,23 @@ public class CommentController {
             @PathVariable Long scheduleId
     ) {
         return ResponseEntity.status(HttpStatus.OK).body(commentService.findAllBySchedule(scheduleId));
+    }
+
+    @PatchMapping("/{commentId}")
+    public ResponseEntity<CommentResponse> update(
+            @PathVariable Long scheduleId,
+            @PathVariable Long commentId,
+            @Valid @RequestBody UpdateCommentRequest request
+    ) {
+        return ResponseEntity.status(HttpStatus.OK).body(commentService.update(scheduleId, commentId, request));
+    }
+
+    @DeleteMapping("/{commentId}")
+    public ResponseEntity<Void> delete(
+            @PathVariable Long scheduleId,
+            @PathVariable Long commentId
+    ) {
+        commentService.delete(scheduleId, commentId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

@@ -2,6 +2,7 @@ package com.springschedule.comment.service;
 
 import com.springschedule.comment.dto.CommentResponse;
 import com.springschedule.comment.dto.CreateCommentRequest;
+import com.springschedule.comment.dto.UpdateCommentRequest;
 import com.springschedule.comment.entity.Comment;
 import com.springschedule.comment.repository.CommentRepository;
 import com.springschedule.schedule.entity.Schedule;
@@ -23,27 +24,7 @@ public class CommentService {
     private final ScheduleRepository scheduleRepository;
     private final UserRepository userRepository;
 
-    private Schedule getScheduleOrThrow(Long scheduleId) {
-        return scheduleRepository.findById(scheduleId).orElseThrow(
-                () -> new IllegalStateException("일정이 없는데요?")
-        );
-    }
 
-    private User getUserOrThrow(Long userId) {
-        return userRepository.findById(userId).orElseThrow(
-                () -> new IllegalStateException("유저가 없는데요?")
-        );
-    }
-
-    private CommentResponse toResponse(Comment comment) {
-        return new CommentResponse(
-                comment.getId(),
-                comment.getContent(),
-                comment.getUser().getUserName(),
-                comment.getCreatedAt(),
-                comment.getModifiedAt()
-        );
-    }
 
     @Transactional
     public CommentResponse save(Long scheduleId, CreateCommentRequest request) {
@@ -65,5 +46,48 @@ public class CommentService {
             responses.add(toResponse(comment));
         }
         return responses;
+    }
+
+    @Transactional
+    public CommentResponse update(Long scheduleId, Long commentId, UpdateCommentRequest request) {
+        Comment comment = getCommentOrThrow(scheduleId, commentId);
+        comment.update(request.getContent());
+        return toResponse(comment);
+    }
+
+    @Transactional
+    public void delete(Long scheduleId, Long commentId) {
+        Comment comment = getCommentOrThrow(scheduleId, commentId);
+        commentRepository.delete(comment);
+    }
+
+
+
+    private Schedule getScheduleOrThrow(Long scheduleId) {
+        return scheduleRepository.findById(scheduleId).orElseThrow(
+                () -> new IllegalStateException("일정이 없는데요?")
+        );
+    }
+
+    private User getUserOrThrow(Long userId) {
+        return userRepository.findById(userId).orElseThrow(
+                () -> new IllegalStateException("유저가 없는데요?")
+        );
+    }
+
+    private Comment getCommentOrThrow(Long scheduleId, Long commentId) {
+        return commentRepository.findByIdAndScheduleId(commentId, scheduleId).orElseThrow(
+                () -> new IllegalStateException("댓글이 없는데요?")
+        );
+    }
+
+    private CommentResponse toResponse(Comment comment) {
+        return new CommentResponse(
+                comment.getId(),
+                comment.getContent(),
+                comment.getUser().getUserName(),
+                comment.getCreatedAt(),
+                comment.getModifiedAt()
+        );
     }
 }
