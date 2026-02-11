@@ -1,5 +1,6 @@
 package com.springschedule.schedule.service;
 
+import com.springschedule.comment.repository.CommentRepository;
 import com.springschedule.schedule.dto.*;
 import com.springschedule.schedule.entity.Schedule;
 import com.springschedule.schedule.repository.ScheduleRepository;
@@ -19,7 +20,7 @@ public class ScheduleService {
 
     private final ScheduleRepository scheduleRepository;
     private final UserRepository userRepository;
-
+    private final CommentRepository commentRepository;
 
 
     // 일정을 생성
@@ -97,9 +98,11 @@ public class ScheduleService {
     // 일정 삭제
     @Transactional
     public void delete(Long scheduleId) {
+        commentRepository.deleteAllByScheduleId(scheduleId);
         Schedule schedule = getScheduleOrThrow(scheduleId);
         scheduleRepository.delete(schedule);
     }
+
 
     // 일정 조회하고 없으면 예외
     private Schedule getScheduleOrThrow(Long scheduleId) {
