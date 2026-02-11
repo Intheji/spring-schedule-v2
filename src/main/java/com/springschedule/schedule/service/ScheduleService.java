@@ -25,9 +25,9 @@ public class ScheduleService {
 
     // 일정을 생성
     @Transactional
-    public CreateScheduleResponse save(CreateScheduleRequest request) {
+    public CreateScheduleResponse save(CreateScheduleRequest request, Long loginUserId) {
 
-        User user = getUserOrThrow(request.getUserId());
+        User user = getUserOrThrow(loginUserId);
 
         // 생성자 호출
         Schedule schedule = new Schedule(
@@ -77,9 +77,13 @@ public class ScheduleService {
 
     // 일정 수정
     @Transactional
-    public UpdateScheduleResponse update(Long scheduleId, UpdateScheduleRequest request) {
-
+    public UpdateScheduleResponse update(Long scheduleId, UpdateScheduleRequest request, Long loginUserId) {
         Schedule schedule = getScheduleOrThrow(scheduleId);
+
+        // 작성자 맞는지 체크
+        if (!schedule.getUser().getId().equals(loginUserId)) {
+            throw new IllegalArgumentException("님 권한 없음");
+        }
 
         // 더티 체킹
         schedule.update(request.getTitle(), request.getContent());
@@ -97,9 +101,15 @@ public class ScheduleService {
 
     // 일정 삭제
     @Transactional
-    public void delete(Long scheduleId) {
-        commentRepository.deleteAllByScheduleId(scheduleId);
+    public void delete(Long scheduleId, Long loginUserId) {
         Schedule schedule = getScheduleOrThrow(scheduleId);
+
+        // 작성자 맞는지 체크
+        if (!schedule.getUser().getId().equals(loginUserId)) {
+            throw new IllegalArgumentException("님 권한 없음");
+        }
+
+        commentRepository.deleteAllByScheduleId(scheduleId);
         scheduleRepository.delete(schedule);
     }
 

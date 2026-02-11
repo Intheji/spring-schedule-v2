@@ -18,7 +18,5 @@ public class CreateScheduleRequest {
     @Size(max = 200, message = "내용은 최대 200자까지 가능합니다")
     private String content;
 
-    @NotNull(message = "작성자는 필수입니다")
-    private Long userId;
 
 }

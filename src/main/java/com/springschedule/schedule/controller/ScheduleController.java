@@ -26,7 +26,7 @@ public class ScheduleController {
         if (loginUserId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        return ResponseEntity.status(HttpStatus.CREATED).body(scheduleService.save(request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(scheduleService.save(request, loginUserId));
     }
 
     // 일정 단건 조회
@@ -55,7 +55,7 @@ public class ScheduleController {
         if (loginUserId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        return ResponseEntity.status(HttpStatus.OK).body(scheduleService.update(scheduleId, request));
+        return ResponseEntity.status(HttpStatus.OK).body(scheduleService.update(scheduleId, request, loginUserId));
     }
 
     // 일정 삭제
@@ -67,7 +67,7 @@ public class ScheduleController {
         if (loginUserId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        scheduleService.delete(scheduleId);
+        scheduleService.delete(scheduleId, loginUserId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }
