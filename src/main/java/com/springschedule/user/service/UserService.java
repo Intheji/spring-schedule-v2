@@ -1,11 +1,10 @@
 package com.springschedule.user.service;
 
+import com.springschedule.config.PasswordEncoder;
 import com.springschedule.user.dto.*;
 import com.springschedule.user.entity.User;
 import com.springschedule.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,18 +15,19 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public UserResponse save(CreateUserRequest request) {
+        String encoded = passwordEncoder.encode(request.getPassword());
 
         User user = new User(
                 request.getUserName(),
                 request.getEmail(),
-                request.getPassword()
+                encoded
         );
 
         User saved = userRepository.save(user);
-
         return toResponse(saved);
     }
 
