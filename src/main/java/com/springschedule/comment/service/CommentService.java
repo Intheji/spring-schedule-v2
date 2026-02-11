@@ -27,9 +27,9 @@ public class CommentService {
 
 
     @Transactional
-    public CommentResponse save(Long scheduleId, CreateCommentRequest request) {
+    public CommentResponse save(Long scheduleId, CreateCommentRequest request, Long loginUserId) {
         Schedule schedule = getScheduleOrThrow(scheduleId);
-        User user = getUserOrThrow(request.getUserId());
+        User user = getUserOrThrow(loginUserId);
 
         Comment comment = new Comment(request.getContent(), schedule, user);
         Comment saved = commentRepository.save(comment);
@@ -49,15 +49,25 @@ public class CommentService {
     }
 
     @Transactional
-    public CommentResponse update(Long scheduleId, Long commentId, UpdateCommentRequest request) {
+    public CommentResponse update(Long scheduleId, Long commentId, UpdateCommentRequest request, Long loginUserId) {
         Comment comment = getCommentOrThrow(scheduleId, commentId);
+
+        if (!comment.getUser().getId().equals(loginUserId)) {
+            throw new IllegalArgumentException("님 권한 없음");
+        }
+
         comment.update(request.getContent());
         return toResponse(comment);
     }
 
     @Transactional
-    public void delete(Long scheduleId, Long commentId) {
+    public void delete(Long scheduleId, Long commentId, Long loginUserId) {
         Comment comment = getCommentOrThrow(scheduleId, commentId);
+
+        if (!comment.getUser().getId().equals(loginUserId)) {
+            throw new IllegalArgumentException("님 권한 없음");
+        }
+
         commentRepository.delete(comment);
     }
 

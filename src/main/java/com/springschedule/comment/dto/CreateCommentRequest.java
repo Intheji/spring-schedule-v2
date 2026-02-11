@@ -14,6 +14,4 @@ public class CreateCommentRequest {
     @Size(max = 200, message = "댓글을 최대 200자까지 가능한데")
     private String content;
 
-    @NotNull(message = "작성자는 필수")
-    private Long userId;
 }

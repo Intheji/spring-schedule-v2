@@ -22,9 +22,13 @@ public class CommentController {
     @PostMapping
     public ResponseEntity<CommentResponse> create(
             @PathVariable Long scheduleId,
-            @Valid @RequestBody CreateCommentRequest request
+            @Valid @RequestBody CreateCommentRequest request,
+            @SessionAttribute(name = "loginUserId", required = false) Long loginUserId
     ) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(commentService.save(scheduleId, request));
+        if (loginUserId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(commentService.save(scheduleId, request, loginUserId));
     }
 
     @GetMapping
@@ -38,17 +42,25 @@ public class CommentController {
     public ResponseEntity<CommentResponse> update(
             @PathVariable Long scheduleId,
             @PathVariable Long commentId,
-            @Valid @RequestBody UpdateCommentRequest request
+            @Valid @RequestBody UpdateCommentRequest request,
+            @SessionAttribute(name = "loginUserId", required = false) Long loginUserId
     ) {
-        return ResponseEntity.status(HttpStatus.OK).body(commentService.update(scheduleId, commentId, request));
+        if (loginUserId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(commentService.update(scheduleId, commentId, request, loginUserId));
     }
 
     @DeleteMapping("/{commentId}")
     public ResponseEntity<Void> delete(
             @PathVariable Long scheduleId,
-            @PathVariable Long commentId
+            @PathVariable Long commentId,
+            @SessionAttribute(name = "loginUserId", required = false) Long loginUserId
     ) {
-        commentService.delete(scheduleId, commentId);
+        if (loginUserId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        commentService.delete(scheduleId, commentId, loginUserId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }
