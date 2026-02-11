@@ -25,7 +25,7 @@ public class ScheduleService {
 
     // 일정을 생성
     @Transactional
-    public CreateScheduleResponse save(CreateScheduleRequest request, Long loginUserId) {
+    public ScheduleResponse save(CreateScheduleRequest request, Long loginUserId) {
 
         User user = getUserOrThrow(loginUserId);
 
@@ -36,29 +36,20 @@ public class ScheduleService {
                 request.getContent()
         );
 
-        // db 저장
-        Schedule saved = scheduleRepository.save(schedule);
-
-        return new CreateScheduleResponse(
-                saved.getId(),
-                saved.getTitle(),
-                saved.getContent(),
-                saved.getUser().getUserName(),
-                saved.getCreatedAt(),
-                saved.getModifiedAt()
-        );
+        scheduleRepository.save(schedule);
+        return toScheduleResponse(schedule);
     }
 
     // 일정 단건 조회
     @Transactional(readOnly = true)
-    public GetScheduleResponse findOne(Long scheduleId) {
+    public ScheduleResponse findOne(Long scheduleId) {
         Schedule schedule = getScheduleOrThrow(scheduleId);
-        return toGetScheduleResponse(schedule);
+        return toScheduleResponse(schedule);
     }
 
     // 전체 일정 조회
     @Transactional(readOnly = true)
-    public List<GetScheduleResponse> findAll(String authorName) {
+    public List<ScheduleResponse> findAll(String authorName) {
 
         List<Schedule> schedules;
 
@@ -68,16 +59,16 @@ public class ScheduleService {
             schedules = scheduleRepository.findByUser_UserNameOrderByModifiedAtDesc(authorName);
         }
 
-        List<GetScheduleResponse> responses = new ArrayList<>();
+        List<ScheduleResponse> responses = new ArrayList<>();
         for (Schedule schedule : schedules) {
-            responses.add(toGetScheduleResponse(schedule));
+            responses.add(toScheduleResponse(schedule));
         }
         return responses;
     }
 
     // 일정 수정
     @Transactional
-    public UpdateScheduleResponse update(Long scheduleId, UpdateScheduleRequest request, Long loginUserId) {
+    public ScheduleResponse update(Long scheduleId, UpdateScheduleRequest request, Long loginUserId) {
         Schedule schedule = getScheduleOrThrow(scheduleId);
 
         // 작성자 맞는지 체크
@@ -85,17 +76,8 @@ public class ScheduleService {
             throw new IllegalArgumentException("님 권한 없음");
         }
 
-        // 더티 체킹
         schedule.update(request.getTitle(), request.getContent());
-
-        return new UpdateScheduleResponse(
-                schedule.getId(),
-                schedule.getTitle(),
-                schedule.getContent(),
-                schedule.getUser().getUserName(),
-                schedule.getCreatedAt(),
-                schedule.getModifiedAt()
-        );
+        return toScheduleResponse(schedule);
     }
 
 
@@ -114,6 +96,8 @@ public class ScheduleService {
     }
 
 
+
+
     // 일정 조회하고 없으면 예외
     private Schedule getScheduleOrThrow(Long scheduleId) {
         return scheduleRepository.findById(scheduleId).orElseThrow(
@@ -122,8 +106,8 @@ public class ScheduleService {
     }
 
     // entity를 응답 dto 변환
-    private GetScheduleResponse toGetScheduleResponse(Schedule schedule) {
-        return new GetScheduleResponse(
+    private ScheduleResponse toScheduleResponse(Schedule schedule) {
+        return new ScheduleResponse(
                 schedule.getId(),
                 schedule.getTitle(),
                 schedule.getContent(),

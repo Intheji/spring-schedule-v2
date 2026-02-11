@@ -19,7 +19,7 @@ public class ScheduleController {
 
     // 일정 생성
     @PostMapping
-    public ResponseEntity<CreateScheduleResponse> create(
+    public ResponseEntity<ScheduleResponse> create(
             @Valid @RequestBody CreateScheduleRequest request,
             @SessionAttribute(name = "loginUserId", required = false) Long loginUserId
     ) {
@@ -31,7 +31,7 @@ public class ScheduleController {
 
     // 일정 단건 조회
     @GetMapping("/{scheduleId}")
-    public ResponseEntity<GetScheduleResponse> getOne(
+    public ResponseEntity<ScheduleResponse> getOne(
             @PathVariable Long scheduleId
     ) {
         return ResponseEntity.status(HttpStatus.OK).body(scheduleService.findOne(scheduleId));
@@ -39,7 +39,7 @@ public class ScheduleController {
 
     // 전체 일정 조회
     @GetMapping
-    public ResponseEntity<List<GetScheduleResponse>> getAll(
+    public ResponseEntity<List<ScheduleResponse>> getAll(
             @RequestParam(required = false) String authorName
     ) {
         return ResponseEntity.status(HttpStatus.OK).body(scheduleService.findAll(authorName));
@@ -47,7 +47,7 @@ public class ScheduleController {
 
     // 일정 수정
     @PatchMapping("/{scheduleId}")
-    public ResponseEntity<UpdateScheduleResponse> update(
+    public ResponseEntity<ScheduleResponse> update(
             @PathVariable Long scheduleId,
             @Valid @RequestBody UpdateScheduleRequest request,
             @SessionAttribute(name = "loginUserId", required = false) Long loginUserId
