@@ -20,8 +20,12 @@ public class ScheduleController {
     // 일정 생성
     @PostMapping
     public ResponseEntity<CreateScheduleResponse> create(
-            @Valid @RequestBody CreateScheduleRequest request
+            @Valid @RequestBody CreateScheduleRequest request,
+            @SessionAttribute(name = "loginUserId", required = false) Long loginUserId
     ) {
+        if (loginUserId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         return ResponseEntity.status(HttpStatus.CREATED).body(scheduleService.save(request));
     }
 
@@ -45,16 +49,24 @@ public class ScheduleController {
     @PatchMapping("/{scheduleId}")
     public ResponseEntity<UpdateScheduleResponse> update(
             @PathVariable Long scheduleId,
-            @Valid @RequestBody UpdateScheduleRequest request
+            @Valid @RequestBody UpdateScheduleRequest request,
+            @SessionAttribute(name = "loginUserId", required = false) Long loginUserId
     ) {
+        if (loginUserId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         return ResponseEntity.status(HttpStatus.OK).body(scheduleService.update(scheduleId, request));
     }
 
     // 일정 삭제
     @DeleteMapping("/{scheduleId}")
     public ResponseEntity<Void> delete(
-            @PathVariable Long scheduleId
+            @PathVariable Long scheduleId,
+            @SessionAttribute(name = "loginUserId", required = false) Long loginUserId
     ) {
+        if (loginUserId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         scheduleService.delete(scheduleId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
