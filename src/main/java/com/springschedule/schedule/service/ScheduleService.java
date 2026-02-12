@@ -13,8 +13,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 
 @Service
 @RequiredArgsConstructor
@@ -59,8 +57,8 @@ public class ScheduleService {
         );
 
         Page<Schedule> schedulesPage = (userName == null || userName.isBlank())
-                ? scheduleRepository.findAll(pageable)
-                : scheduleRepository.findByUser_UserName(userName, pageable);
+                ? scheduleRepository.findAllByDeletedAtIsNull(pageable)
+                : scheduleRepository.findByUser_UserNameAndDeletedAtIsNull(userName, pageable);
         return schedulesPage.map(this::toScheduleResponse);
 
         //        List<Schedule> schedules;
@@ -101,8 +99,10 @@ public class ScheduleService {
             throw new IllegalArgumentException("님 권한 없음");
         }
 
-        commentRepository.deleteAllBySchedule_Id(scheduleId);
-        scheduleRepository.delete(schedule);
+//        commentRepository.deleteAllBySchedule_Id(scheduleId);
+//        scheduleRepository.delete(schedule);
+
+        schedule.softDelete();
     }
 
 
@@ -110,7 +110,7 @@ public class ScheduleService {
 
     // 일정 조회하고 없으면 예외
     private Schedule getScheduleOrThrow(Long scheduleId) {
-        return scheduleRepository.findById(scheduleId).orElseThrow(
+        return scheduleRepository.findByIdAndDeletedAtIsNull(scheduleId).orElseThrow(
                 () -> new IllegalStateException("존재하지 않는 일정입니다")
         );
     }

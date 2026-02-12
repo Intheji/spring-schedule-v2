@@ -7,6 +7,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
@@ -27,6 +29,10 @@ public class Schedule extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    // soft delete
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     public Schedule(User user, String title, String content) {
         this.user = user;
         this.title = title;
@@ -37,4 +43,9 @@ public class Schedule extends BaseEntity {
         this.title = title;
         this.content = content;
     }
+
+    public void softDelete() {
+        this.deletedAt = LocalDateTime.now();
+    }
+
 }
