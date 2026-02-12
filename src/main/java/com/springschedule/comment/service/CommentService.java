@@ -18,6 +18,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CommentService {
 
     private final CommentRepository commentRepository;
@@ -37,7 +38,6 @@ public class CommentService {
         return  toResponse(saved);
     }
 
-    @Transactional(readOnly = true)
     public List<CommentResponse> findAllBySchedule(Long scheduleId) {
         getScheduleOrThrow(scheduleId);
 
@@ -52,6 +52,8 @@ public class CommentService {
 
     @Transactional
     public CommentResponse update(Long scheduleId, Long commentId, UpdateCommentRequest request, Long loginUserId) {
+        getScheduleOrThrow(scheduleId);
+
         Comment comment = getCommentOrThrow(scheduleId, commentId);
 
         if (!comment.getUser().getId().equals(loginUserId)) {
@@ -64,6 +66,8 @@ public class CommentService {
 
     @Transactional
     public void delete(Long scheduleId, Long commentId, Long loginUserId) {
+        getScheduleOrThrow(scheduleId);
+
         Comment comment = getCommentOrThrow(scheduleId, commentId);
 
         if (!comment.getUser().getId().equals(loginUserId)) {
