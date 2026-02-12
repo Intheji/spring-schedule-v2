@@ -3,7 +3,10 @@ package com.springschedule.schedule.controller;
 import com.springschedule.schedule.dto.*;
 import com.springschedule.schedule.service.ScheduleService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -39,10 +42,15 @@ public class ScheduleController {
 
     // 전체 일정 조회
     @GetMapping
-    public ResponseEntity<List<ScheduleResponse>> getAll(
-            @RequestParam(required = false) String authorName
+    public ResponseEntity<Page<ScheduleResponse>> getAll(
+            @RequestParam(required = false) String userName,
+            @RequestParam(defaultValue = "1") @Min(value = 1, message = "1 이상이 정상입니다") int page,
+            @RequestParam(defaultValue = "10")
+            @Min(value = 1, message = "일정이 한 개는 나와야죠")
+            @Max(value = 30, message = "30개 이상은 지원 안 합니다") int size
     ) {
-        return ResponseEntity.status(HttpStatus.OK).body(scheduleService.findAll(authorName));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(scheduleService.findPage(userName, page, size));
     }
 
     // 일정 수정

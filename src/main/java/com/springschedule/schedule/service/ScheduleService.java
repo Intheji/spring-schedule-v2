@@ -7,15 +7,18 @@ import com.springschedule.schedule.repository.ScheduleRepository;
 import com.springschedule.user.entity.User;
 import com.springschedule.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ScheduleService {
 
     private final ScheduleRepository scheduleRepository;
@@ -41,29 +44,36 @@ public class ScheduleService {
     }
 
     // 일정 단건 조회
-    @Transactional(readOnly = true)
     public ScheduleResponse findOne(Long scheduleId) {
         Schedule schedule = getScheduleOrThrow(scheduleId);
         return toScheduleResponse(schedule);
     }
 
     // 전체 일정 조회
-    @Transactional(readOnly = true)
-    public List<ScheduleResponse> findAll(String authorName) {
+    public Page<ScheduleResponse> findPage(String userName, int page, int size) {
 
-        List<Schedule> schedules;
+        PageRequest pageable = PageRequest.of(
+                page - 1,
+                size,
+                Sort.by(Sort.Direction.DESC, "modifiedAt")
+        );
 
-        if (authorName == null || authorName.isBlank()) {
-            schedules = scheduleRepository.findAllByOrderByModifiedAtDesc();
-        } else {
-            schedules = scheduleRepository.findByUser_UserNameOrderByModifiedAtDesc(authorName);
-        }
+        Page<Schedule> schedulesPage = (userName == null || userName.isBlank())
+                ? scheduleRepository.findAll(pageable)
+                : scheduleRepository.findByUser_UserName(userName, pageable);
+        return schedulesPage.map(this::toScheduleResponse);
 
-        List<ScheduleResponse> responses = new ArrayList<>();
-        for (Schedule schedule : schedules) {
-            responses.add(toScheduleResponse(schedule));
-        }
-        return responses;
+        //        List<Schedule> schedules;
+//        if (authorName == null || authorName.isBlank()) {
+//            schedules = scheduleRepository.findAllByOrderByModifiedAtDesc();
+//        } else {
+//            schedules = scheduleRepository.findByUser_UserNameOrderByModifiedAtDesc(authorName);
+//        }
+//        List<ScheduleResponse> responses = new ArrayList<>();
+//        for (Schedule schedule : schedules) {
+//            responses.add(toScheduleResponse(schedule));
+//        }
+//        return responses;
     }
 
     // 일정 수정
@@ -91,7 +101,7 @@ public class ScheduleService {
             throw new IllegalArgumentException("님 권한 없음");
         }
 
-        commentRepository.deleteAllByScheduleId(scheduleId);
+        commentRepository.deleteAllBySchedule_Id(scheduleId);
         scheduleRepository.delete(schedule);
     }
 
@@ -107,11 +117,13 @@ public class ScheduleService {
 
     // entity를 응답 dto 변환
     private ScheduleResponse toScheduleResponse(Schedule schedule) {
+        Long commentCount = commentRepository.countBySchedule_Id(schedule.getId());
         return new ScheduleResponse(
                 schedule.getId(),
                 schedule.getTitle(),
                 schedule.getContent(),
                 schedule.getUser().getUserName(),
+                commentCount,
                 schedule.getCreatedAt(),
                 schedule.getModifiedAt()
         );

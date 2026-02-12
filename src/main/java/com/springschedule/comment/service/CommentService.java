@@ -39,7 +39,7 @@ public class CommentService {
 
     @Transactional(readOnly = true)
     public List<CommentResponse> findAllBySchedule(Long scheduleId) {
-        List<Comment> comments = commentRepository.findAllByScheduleIdOrderByCreatedAtAsc(scheduleId);
+        List<Comment> comments = commentRepository.findAllBySchedule_IdOrderByCreatedAtAsc(scheduleId);
 
         List<CommentResponse> responses = new ArrayList<>();
         for (Comment comment : comments) {
@@ -86,7 +86,7 @@ public class CommentService {
     }
 
     private Comment getCommentOrThrow(Long scheduleId, Long commentId) {
-        return commentRepository.findByIdAndScheduleId(commentId, scheduleId).orElseThrow(
+        return commentRepository.findByIdAndSchedule_Id(commentId, scheduleId).orElseThrow(
                 () -> new IllegalStateException("댓글이 없는데요?")
         );
     }
