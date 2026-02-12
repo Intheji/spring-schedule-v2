@@ -4,6 +4,7 @@ import com.springschedule.comment.dto.CommentResponse;
 import com.springschedule.comment.dto.CreateCommentRequest;
 import com.springschedule.comment.dto.UpdateCommentRequest;
 import com.springschedule.comment.service.CommentService;
+import com.springschedule.common.exception.UnauthorizedException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,7 +27,7 @@ public class CommentController {
             @SessionAttribute(name = "loginUserId", required = false) Long loginUserId
     ) {
         if (loginUserId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new UnauthorizedException("님 로그인 해 주세요");
         }
         return ResponseEntity.status(HttpStatus.CREATED).body(commentService.save(scheduleId, request, loginUserId));
     }
@@ -46,7 +47,7 @@ public class CommentController {
             @SessionAttribute(name = "loginUserId", required = false) Long loginUserId
     ) {
         if (loginUserId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new UnauthorizedException("님 로그인 해 주세요");
         }
         return ResponseEntity.status(HttpStatus.OK).body(commentService.update(scheduleId, commentId, request, loginUserId));
     }
@@ -58,7 +59,7 @@ public class CommentController {
             @SessionAttribute(name = "loginUserId", required = false) Long loginUserId
     ) {
         if (loginUserId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new UnauthorizedException("님 로그인 해 주세요");
         }
         commentService.delete(scheduleId, commentId, loginUserId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

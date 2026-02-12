@@ -1,6 +1,7 @@
 package com.springschedule.auth.controller;
 
 import com.springschedule.auth.dto.LoginRequest;
+import com.springschedule.common.exception.UnauthorizedException;
 import com.springschedule.config.PasswordEncoder;
 import com.springschedule.user.entity.User;
 import com.springschedule.user.repository.UserRepository;
@@ -56,7 +57,7 @@ public class AuthController {
             Long loginUserId
     ) {
         if (loginUserId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new UnauthorizedException("님 로그인 해 주세요");
         }
         return ResponseEntity.ok().build();
     }

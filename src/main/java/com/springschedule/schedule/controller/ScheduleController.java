@@ -1,5 +1,6 @@
 package com.springschedule.schedule.controller;
 
+import com.springschedule.common.exception.UnauthorizedException;
 import com.springschedule.schedule.dto.*;
 import com.springschedule.schedule.service.ScheduleService;
 import jakarta.validation.Valid;
@@ -28,7 +29,7 @@ public class ScheduleController {
             @SessionAttribute(name = "loginUserId", required = false) Long loginUserId
     ) {
         if (loginUserId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new UnauthorizedException("님 로그인 해 주세요");
         }
         return ResponseEntity.status(HttpStatus.CREATED).body(scheduleService.save(request, loginUserId));
     }
@@ -62,7 +63,7 @@ public class ScheduleController {
             @SessionAttribute(name = "loginUserId", required = false) Long loginUserId
     ) {
         if (loginUserId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new UnauthorizedException("님 로그인 해 주세요");
         }
         return ResponseEntity.status(HttpStatus.OK).body(scheduleService.update(scheduleId, request, loginUserId));
     }
@@ -74,7 +75,7 @@ public class ScheduleController {
             @SessionAttribute(name = "loginUserId", required = false) Long loginUserId
     ) {
         if (loginUserId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new UnauthorizedException("님 로그인 해 주세요");
         }
         scheduleService.delete(scheduleId, loginUserId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
