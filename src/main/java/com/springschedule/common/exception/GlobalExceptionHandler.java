@@ -2,12 +2,14 @@ package com.springschedule.common.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -70,8 +72,17 @@ public class GlobalExceptionHandler {
     }
 
 
+    // 500 예상 못한 예외
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleException(
+            Exception e,
+            HttpServletRequest request
+    ) {
+        log.error("Unhandled exception", e);
+        return error(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR", "서버 오류 발생~", request);
+    }
 
-
+    
     // 공통 응답 중복으로 메서드로 뺌
     private ResponseEntity<ErrorResponse> error(
             HttpStatus status,
