@@ -19,6 +19,9 @@ public class UserService {
 
     @Transactional
     public UserResponse save(CreateUserRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("이메일 이미 사용 중..");
+        }
         String encoded = passwordEncoder.encode(request.getPassword());
 
         User user = new User(
@@ -46,11 +49,17 @@ public class UserService {
 
     @Transactional
     public UserResponse update(Long userId, UpdateUserRequest request) {
+
+        if (request.getUserName() == null && request.getEmail() == null) {
+            throw new IllegalArgumentException("수정할 값 없음");
+        }
+        if (userRepository.existsByEmailAndIdNot(request.getEmail(), userId)) {
+            throw new IllegalArgumentException("이메일 이미 사용 중..");
+        }
         User user = getUserOrThrow(userId);
-        user.update(
-                request.getUserName(),
-                request.getEmail()
-        );
+        String newUserName = (request.getUserName() != null) ? request.getUserName() : user.getUserName();
+        String newEmail    = (request.getEmail() != null) ? request.getEmail() : user.getEmail();
+        user.update(newUserName, newEmail);
         return toResponse(user);
     }
 
