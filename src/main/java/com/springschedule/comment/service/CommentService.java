@@ -39,6 +39,8 @@ public class CommentService {
 
     @Transactional(readOnly = true)
     public List<CommentResponse> findAllBySchedule(Long scheduleId) {
+        getScheduleOrThrow(scheduleId);
+
         List<Comment> comments = commentRepository.findAllBySchedule_IdOrderByCreatedAtAsc(scheduleId);
 
         List<CommentResponse> responses = new ArrayList<>();
@@ -74,7 +76,7 @@ public class CommentService {
 
 
     private Schedule getScheduleOrThrow(Long scheduleId) {
-        return scheduleRepository.findById(scheduleId).orElseThrow(
+        return scheduleRepository.findByIdAndDeletedAtIsNull(scheduleId).orElseThrow(
                 () -> new IllegalStateException("일정이 없는데요?")
         );
     }

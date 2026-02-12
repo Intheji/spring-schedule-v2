@@ -89,7 +89,7 @@ public class ScheduleService {
     }
 
 
-    // 일정 삭제
+    // 일정 삭제(soft delete 적용)
     @Transactional
     public void delete(Long scheduleId, Long loginUserId) {
         Schedule schedule = getScheduleOrThrow(scheduleId);
@@ -111,7 +111,7 @@ public class ScheduleService {
     // 일정 조회하고 없으면 예외
     private Schedule getScheduleOrThrow(Long scheduleId) {
         return scheduleRepository.findByIdAndDeletedAtIsNull(scheduleId).orElseThrow(
-                () -> new IllegalStateException("존재하지 않는 일정입니다")
+                () -> new IllegalStateException("일정이 없는데요..? 축하합니다")
         );
     }
 
