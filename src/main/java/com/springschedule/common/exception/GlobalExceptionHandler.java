@@ -17,7 +17,7 @@ public class GlobalExceptionHandler {
             IllegalArgumentException e,
             HttpServletRequest request
     ) {
-        return error(HttpStatus.BAD_REQUEST, e.getMessage(), request);
+        return error(HttpStatus.BAD_REQUEST, "BAD_REQUEST", e.getMessage(), request);
     }
 
     // 404 일정 없음 등
@@ -26,7 +26,7 @@ public class GlobalExceptionHandler {
             IllegalStateException e,
             HttpServletRequest request
     ) {
-        return error(HttpStatus.NOT_FOUND, e.getMessage(), request);
+        return error(HttpStatus.NOT_FOUND, "NOT_FOUND", e.getMessage(), request);
     }
 
     // 400 Bean Validation 실패 예외 처리
@@ -42,7 +42,7 @@ public class GlobalExceptionHandler {
                 .map(fieldError -> fieldError.getDefaultMessage())
                 .orElse("요청 값이 유효하지 않음");
 
-        return error(HttpStatus.BAD_REQUEST, message, request);
+        return error(HttpStatus.BAD_REQUEST, "VALIDATION_FAILED", message, request);
     }
 
     // 400 QueryParam/pathVariable Bean Validation 실패(@Min/@Max) 처리
@@ -57,17 +57,20 @@ public class GlobalExceptionHandler {
                 .map(v -> v.getMessage())
                 .orElse("요청 값이 유효하지 않음");
 
-        return error(HttpStatus.BAD_REQUEST, message, request);
+        return error(HttpStatus.BAD_REQUEST, "VALIDATION_FAILED", message, request);
     }
 
     // 공통 응답 중복으로 메서드로 뺌
     private ResponseEntity<ErrorResponse> error(
             HttpStatus status,
+            String code,
             String message,
             HttpServletRequest request
     ) {
         ErrorResponse body = new ErrorResponse(
                 status.value(),
+                status.name(),
+                code,
                 message,
                 request.getRequestURI()
         );
