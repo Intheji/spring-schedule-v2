@@ -60,6 +60,18 @@ public class GlobalExceptionHandler {
         return error(HttpStatus.BAD_REQUEST, "VALIDATION_FAILED", message, request);
     }
 
+    // 401 로그인 필요
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ErrorResponse> handleUnauthorized(
+            UnauthorizedException e,
+            HttpServletRequest request
+    ) {
+        return error(HttpStatus.UNAUTHORIZED, "AUTH_REQUIRED", e.getMessage(), request);
+    }
+
+
+
+
     // 공통 응답 중복으로 메서드로 뺌
     private ResponseEntity<ErrorResponse> error(
             HttpStatus status,
