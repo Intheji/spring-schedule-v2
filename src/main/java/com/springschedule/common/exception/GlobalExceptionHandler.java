@@ -1,6 +1,7 @@
 package com.springschedule.common.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -39,6 +40,21 @@ public class GlobalExceptionHandler {
                 .stream()
                 .findFirst()
                 .map(fieldError -> fieldError.getDefaultMessage())
+                .orElse("요청 값이 유효하지 않음");
+
+        return error(HttpStatus.BAD_REQUEST, message, request);
+    }
+
+    // 400 QueryParam/pathVariable Bean Validation 실패(@Min/@Max) 처리
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolation(
+            ConstraintViolationException e,
+            HttpServletRequest request
+    ) {
+        String message = e.getConstraintViolations()
+                .stream()
+                .findFirst()
+                .map(v -> v.getMessage())
                 .orElse("요청 값이 유효하지 않음");
 
         return error(HttpStatus.BAD_REQUEST, message, request);
