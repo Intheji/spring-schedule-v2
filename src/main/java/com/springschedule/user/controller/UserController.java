@@ -19,6 +19,7 @@ public class UserController {
 
     private final UserService userService;
 
+    // 회원가입
     @PostMapping
     public ResponseEntity<UserResponse> create(
             @Valid @RequestBody CreateUserRequest request
@@ -26,11 +27,13 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.save(request));
     }
 
+    // 유저 목록 조회
     @GetMapping
     public ResponseEntity<List<UserResponse>> getUsers() {
         return ResponseEntity.status(HttpStatus.OK).body(userService.findAll());
     }
 
+    // 유저 단건 조회
     @GetMapping("/{userId}")
     public ResponseEntity<UserResponse> getUser(
             @PathVariable Long userId
@@ -38,6 +41,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(userService.findOne(userId));
     }
 
+    // 유저 수정
     @PatchMapping("/{userId}")
     public ResponseEntity<UserResponse> update(
             @PathVariable Long userId,
@@ -46,6 +50,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(userService.update(userId, request));
     }
 
+    // 유저 삭제
     @DeleteMapping("/{userId}")
     public ResponseEntity<Void> delete(
             @PathVariable Long userId

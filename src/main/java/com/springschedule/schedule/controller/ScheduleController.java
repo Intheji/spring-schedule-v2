@@ -22,7 +22,7 @@ public class ScheduleController {
 
     private final ScheduleService scheduleService;
 
-    // 일정 생성
+    // 일정 생성: 로그인 사용자만 생성 가능
     @PostMapping
     public ResponseEntity<ScheduleResponse> create(
             @Valid @RequestBody CreateScheduleRequest request,
@@ -34,7 +34,7 @@ public class ScheduleController {
         return ResponseEntity.status(HttpStatus.CREATED).body(scheduleService.save(request, loginUserId));
     }
 
-    // 일정 단건 조회
+    // 일정 단건 조회: 로그인 없이 접근 가능
     @GetMapping("/{scheduleId}")
     public ResponseEntity<ScheduleResponse> getOne(
             @PathVariable Long scheduleId
@@ -42,7 +42,7 @@ public class ScheduleController {
         return ResponseEntity.status(HttpStatus.OK).body(scheduleService.findOne(scheduleId));
     }
 
-    // 전체 일정 조회
+    // 전체 일정 조회: 페이징 + 로그인 없이 접근 가능
     @GetMapping
     public ResponseEntity<Page<ScheduleResponse>> getAll(
             @RequestParam(required = false) String userName,
@@ -51,29 +51,32 @@ public class ScheduleController {
             @Min(value = 1, message = "일정이 한 개는 나와야죠")
             @Max(value = 30, message = "30개 이상은 지원 안 합니다") int size
     ) {
+        // 400 처리
         return ResponseEntity.status(HttpStatus.OK)
                 .body(scheduleService.findPage(userName, page, size));
     }
 
-    // 일정 수정
+    // 일정 수정: 작성자만 수정 가능 로그인 필요
     @PatchMapping("/{scheduleId}")
     public ResponseEntity<ScheduleResponse> update(
             @PathVariable Long scheduleId,
             @Valid @RequestBody UpdateScheduleRequest request,
             @SessionAttribute(name = "loginUserId", required = false) Long loginUserId
     ) {
+        // 로그인 안 했으면 401 처리
         if (loginUserId == null) {
             throw new UnauthorizedException("님 로그인 해 주세요");
         }
         return ResponseEntity.status(HttpStatus.OK).body(scheduleService.update(scheduleId, request, loginUserId));
     }
 
-    // 일정 삭제
+    // 일정 삭제: soft delete 작성자만 삭제 가능
     @DeleteMapping("/{scheduleId}")
     public ResponseEntity<Void> delete(
             @PathVariable Long scheduleId,
             @SessionAttribute(name = "loginUserId", required = false) Long loginUserId
     ) {
+        // 401 처리
         if (loginUserId == null) {
             throw new UnauthorizedException("님 로그인 해 주세요");
         }

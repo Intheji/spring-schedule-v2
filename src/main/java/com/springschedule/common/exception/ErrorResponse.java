@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 @Getter
 public class ErrorResponse {
 
+    // 공통 에러 응답 포맷 필드 정의
     private final LocalDateTime timestamp;
     private final int status;
     private final String error;

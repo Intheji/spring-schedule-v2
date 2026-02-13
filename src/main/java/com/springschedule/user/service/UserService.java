@@ -17,11 +17,13 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    // 회원가입
     @Transactional
     public UserResponse save(CreateUserRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("이메일 이미 사용 중..");
         }
+        // 비밀번호 해싱
         String encoded = passwordEncoder.encode(request.getPassword());
 
         User user = new User(
@@ -34,6 +36,7 @@ public class UserService {
         return toResponse(saved);
     }
 
+    // 유저 목록 조회
     @Transactional(readOnly = true)
     public List<UserResponse> findAll() {
         return userRepository.findAll().stream()
@@ -41,12 +44,14 @@ public class UserService {
                 .toList();
     }
 
+    // 유저 단건 조회
     @Transactional(readOnly = true)
     public UserResponse findOne(Long userId) {
         User user = getUserOrThrow(userId);
         return toResponse(user);
     }
 
+    // 유저 수정
     @Transactional
     public UserResponse update(Long userId, UpdateUserRequest request) {
 
@@ -63,6 +68,7 @@ public class UserService {
         return toResponse(user);
     }
 
+    // 유저 삭제
     @Transactional
     public void delete(Long userId) {
         User user = getUserOrThrow(userId);
@@ -79,6 +85,7 @@ public class UserService {
         );
     }
 
+    // 유저 조회
     private User getUserOrThrow(Long userId) {
         return userRepository.findById(userId).orElseThrow(
                 () -> new IllegalStateException("유저가 존재하지 않는데요?")

@@ -29,13 +29,12 @@ public class ScheduleService {
     private final CommentRepository commentRepository;
 
 
-    // 일정을 생성
+    // 일정 생성
     @Transactional
     public ScheduleResponse save(CreateScheduleRequest request, Long loginUserId) {
 
         User user = getUserOrThrow(loginUserId);
 
-        // 생성자 호출
         Schedule schedule = new Schedule(
                 user,
                 request.getTitle(),
@@ -46,29 +45,32 @@ public class ScheduleService {
         return toScheduleResponse(schedule);
     }
 
-    // 일정 단건 조회
+    // 일정 단건 조회: soft delete되지 않은 일정만 조회해서 반환
     public ScheduleResponse findOne(Long scheduleId) {
         Schedule schedule = getScheduleOrThrow(scheduleId);
         return toScheduleResponse(schedule);
     }
 
-    // 전체 일정 조회
+    // 일정 목록 조회
     public Page<ScheduleResponse> findPage(String userName, int page, int size) {
-
+        // page 1부터를 0으로 변환하고 정렬 조건 적용
         PageRequest pageable = PageRequest.of(
                 page - 1,
                 size,
                 Sort.by(Sort.Direction.DESC, "modifiedAt")
         );
 
+        // 작성자 필터가 없으면 전체 조회, 있으면 작성자 이름으로 필터링
         Page<Schedule> schedulesPage = (userName == null || userName.isBlank())
                 ? scheduleRepository.findAllByDeletedAtIsNull(pageable)
                 : scheduleRepository.findByUser_UserNameAndDeletedAtIsNull(userName, pageable);
 
+        // 현재 페이지에 포함된 일정 ID 목록 추출
         List<Long> scheduleIds = schedulesPage.getContent().stream()
                 .map(Schedule::getId)
                 .toList();
 
+        // 일정별 댓글 개수를 집계해서 Map으로 변환
         Map<Long, Long> commentCountMap = scheduleIds.isEmpty()
                 ? Map.of()
                 : commentRepository.countByScheduleIds(scheduleIds).stream()
@@ -77,6 +79,7 @@ public class ScheduleService {
                         ScheduleCommentCount::getCommentCount
                 ));
 
+        // 댓글 개수 포함
         return schedulesPage.map(schedule ->
                 toScheduleResponse(schedule, commentCountMap.getOrDefault(schedule.getId(), 0L))
         );
@@ -98,7 +101,7 @@ public class ScheduleService {
     }
 
 
-    // 일정 삭제(soft delete 적용)
+    // 일정 삭제(soft delete 적용, deleteAt에 삭제 시간 저장)
     @Transactional
     public void delete(Long scheduleId, Long loginUserId) {
         Schedule schedule = getScheduleOrThrow(scheduleId);
@@ -107,13 +110,8 @@ public class ScheduleService {
         if (!schedule.getUser().getId().equals(loginUserId)) {
             throw new IllegalArgumentException("님 권한 없음");
         }
-
-//        commentRepository.deleteAllBySchedule_Id(scheduleId);
-//        scheduleRepository.delete(schedule);
-
         schedule.softDelete();
     }
-
 
 
 
@@ -124,7 +122,7 @@ public class ScheduleService {
         );
     }
 
-    // 페이지 조회용
+    // 페이징 응답을 변환
     private ScheduleResponse toScheduleResponse(Schedule schedule, Long commentCount) {
         return new ScheduleResponse(
                 schedule.getId(),
@@ -143,6 +141,7 @@ public class ScheduleService {
         return toScheduleResponse(schedule, commentCount);
     }
 
+    // 유저 조회: 작성자가 없으면 404 예외 처리
     private User getUserOrThrow(Long userId) {
         return userRepository.findById(userId).orElseThrow(
                 () -> new IllegalStateException("유저가 없음..")

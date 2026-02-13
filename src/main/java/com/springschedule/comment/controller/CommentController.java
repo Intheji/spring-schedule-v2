@@ -20,6 +20,7 @@ public class CommentController {
 
     private final CommentService commentService;
 
+    // 댓글 생성: 로그인 사용자만 작성 가능
     @PostMapping
     public ResponseEntity<CommentResponse> create(
             @PathVariable Long scheduleId,
@@ -32,6 +33,7 @@ public class CommentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(commentService.save(scheduleId, request, loginUserId));
     }
 
+    // 댓글 목록 조회
     @GetMapping
     public ResponseEntity<List<CommentResponse>> getComments(
             @PathVariable Long scheduleId
@@ -39,6 +41,7 @@ public class CommentController {
         return ResponseEntity.status(HttpStatus.OK).body(commentService.findAllBySchedule(scheduleId));
     }
 
+    // 댓글 수정
     @PatchMapping("/{commentId}")
     public ResponseEntity<CommentResponse> update(
             @PathVariable Long scheduleId,
@@ -52,6 +55,7 @@ public class CommentController {
         return ResponseEntity.status(HttpStatus.OK).body(commentService.update(scheduleId, commentId, request, loginUserId));
     }
 
+    // 댓글 삭제
     @DeleteMapping("/{commentId}")
     public ResponseEntity<Void> delete(
             @PathVariable Long scheduleId,

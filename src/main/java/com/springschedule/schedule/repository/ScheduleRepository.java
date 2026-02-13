@@ -9,17 +9,12 @@ import java.util.Optional;
 
 public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
 
-    // 쿼리 메서드로 전체 조회 - 수정일 내림차순
-//    List<Schedule> findAllByOrderByModifiedAtDesc();
-
-    // 쿼리 메서드로 작성자명 조회 - 수정일 내림차순
-//    List<Schedule> findByUser_UserNameOrderByModifiedAtDesc(String userName);
-
-    // 페이징 버전
-//    Page<Schedule> findByUser_UserName(String userName, Pageable pageable);
-
-    // 삭제 안 된 것만 조회하는 메서드
+    // soft delete되지 않은 일정만 페이징 조회
     Page<Schedule> findAllByDeletedAtIsNull(Pageable pageable);
+
+    // 작성자 이름으로 필터링
     Page<Schedule> findByUser_UserNameAndDeletedAtIsNull(String userName, Pageable pageable);
+
+    // 일정 한 개를 soft delete 여부까지 포함해서 조회
     Optional<Schedule> findByIdAndDeletedAtIsNull(Long id);
 }
