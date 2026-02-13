@@ -33,9 +33,7 @@ public class CommentService {
         User user = getUserOrThrow(loginUserId);
 
         Comment comment = new Comment(request.getContent(), schedule, user);
-        Comment saved = commentRepository.save(comment);
-
-        return  toResponse(saved);
+        return toResponse(commentRepository.save(comment));
     }
 
     public List<CommentResponse> findAllBySchedule(Long scheduleId) {
@@ -53,13 +51,8 @@ public class CommentService {
     @Transactional
     public CommentResponse update(Long scheduleId, Long commentId, UpdateCommentRequest request, Long loginUserId) {
         getScheduleOrThrow(scheduleId);
-
         Comment comment = getCommentOrThrow(scheduleId, commentId);
-
-        if (!comment.getUser().getId().equals(loginUserId)) {
-            throw new IllegalArgumentException("님 권한 없음");
-        }
-
+        validateOwner(comment.getUser().getId(), loginUserId);
         comment.update(request.getContent());
         return toResponse(comment);
     }
@@ -67,15 +60,11 @@ public class CommentService {
     @Transactional
     public void delete(Long scheduleId, Long commentId, Long loginUserId) {
         getScheduleOrThrow(scheduleId);
-
         Comment comment = getCommentOrThrow(scheduleId, commentId);
-
-        if (!comment.getUser().getId().equals(loginUserId)) {
-            throw new IllegalArgumentException("님 권한 없음");
-        }
-
+        validateOwner(comment.getUser().getId(), loginUserId);
         commentRepository.delete(comment);
     }
+
 
 
 
@@ -106,4 +95,11 @@ public class CommentService {
                 comment.getModifiedAt()
         );
     }
+
+    private void validateOwner(Long ownerId, Long loginUserId) {
+        if (!ownerId.equals(loginUserId)) {
+            throw new IllegalArgumentException("님 권한 없음");
+        }
+    }
+
 }

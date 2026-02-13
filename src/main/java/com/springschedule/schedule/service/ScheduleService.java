@@ -1,6 +1,7 @@
 package com.springschedule.schedule.service;
 
 import com.springschedule.comment.repository.CommentRepository;
+import com.springschedule.comment.repository.ScheduleCommentCount;
 import com.springschedule.schedule.dto.*;
 import com.springschedule.schedule.entity.Schedule;
 import com.springschedule.schedule.repository.ScheduleRepository;
@@ -12,6 +13,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -59,19 +64,23 @@ public class ScheduleService {
         Page<Schedule> schedulesPage = (userName == null || userName.isBlank())
                 ? scheduleRepository.findAllByDeletedAtIsNull(pageable)
                 : scheduleRepository.findByUser_UserNameAndDeletedAtIsNull(userName, pageable);
-        return schedulesPage.map(this::toScheduleResponse);
 
-        //        List<Schedule> schedules;
-//        if (authorName == null || authorName.isBlank()) {
-//            schedules = scheduleRepository.findAllByOrderByModifiedAtDesc();
-//        } else {
-//            schedules = scheduleRepository.findByUser_UserNameOrderByModifiedAtDesc(authorName);
-//        }
-//        List<ScheduleResponse> responses = new ArrayList<>();
-//        for (Schedule schedule : schedules) {
-//            responses.add(toScheduleResponse(schedule));
-//        }
-//        return responses;
+        List<Long> scheduleIds = schedulesPage.getContent().stream()
+                .map(Schedule::getId)
+                .toList();
+
+        Map<Long, Long> commentCountMap = scheduleIds.isEmpty()
+                ? Map.of()
+                : commentRepository.countByScheduleIds(scheduleIds).stream()
+                .collect(Collectors.toMap(
+                        ScheduleCommentCount::getScheduleId,
+                        ScheduleCommentCount::getCommentCount
+                ));
+
+        return schedulesPage.map(schedule ->
+                toScheduleResponse(schedule, commentCountMap.getOrDefault(schedule.getId(), 0L))
+        );
+
     }
 
     // 일정 수정
@@ -115,9 +124,8 @@ public class ScheduleService {
         );
     }
 
-    // entity를 응답 dto 변환
-    private ScheduleResponse toScheduleResponse(Schedule schedule) {
-        Long commentCount = commentRepository.countBySchedule_Id(schedule.getId());
+    // 페이지 조회용
+    private ScheduleResponse toScheduleResponse(Schedule schedule, Long commentCount) {
         return new ScheduleResponse(
                 schedule.getId(),
                 schedule.getTitle(),
@@ -127,6 +135,12 @@ public class ScheduleService {
                 schedule.getCreatedAt(),
                 schedule.getModifiedAt()
         );
+    }
+
+    // 단건 조회용
+    private ScheduleResponse toScheduleResponse(Schedule schedule) {
+        Long commentCount = commentRepository.countBySchedule_Id(schedule.getId());
+        return toScheduleResponse(schedule, commentCount);
     }
 
     private User getUserOrThrow(Long userId) {
