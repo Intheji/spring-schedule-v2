@@ -223,5 +223,5 @@
   - IntelliJ에서 `SpringScheduleV2Application` 실행
 
   ---
-  블로그 https://ggoongdeng.tistory.com/244
-  포스트맨 https://documenter.getpostman.com/view/51137755/2sBXcBmhCy
+  ### 😶 블로그 https://ggoongdeng.tistory.com/244
+  ### 포스트맨 https://documenter.getpostman.com/view/51137755/2sBXcBmhCy
