@@ -1,10 +1,12 @@
 package com.springschedule.common.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.HttpSessionRequiredException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -69,6 +71,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleUnauthorized(
             UnauthorizedException e,
             HttpServletRequest request
+    ) {
+        return error(HttpStatus.UNAUTHORIZED, "AUTH_REQUIRED", e.getMessage(), request);
+    }
+
+    @ExceptionHandler(HttpSessionRequiredException.class)
+    public ResponseEntity<ErrorResponse> handleHttpSessionRequired(
+            HttpSessionRequiredException e, HttpServletRequest request
     ) {
         return error(HttpStatus.UNAUTHORIZED, "AUTH_REQUIRED", e.getMessage(), request);
     }

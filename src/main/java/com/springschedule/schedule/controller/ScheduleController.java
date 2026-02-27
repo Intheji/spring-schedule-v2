@@ -8,6 +8,8 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -46,14 +48,12 @@ public class ScheduleController {
     @GetMapping
     public ResponseEntity<Page<ScheduleResponse>> getAll(
             @RequestParam(required = false) String userName,
-            @RequestParam(defaultValue = "1") @Min(value = 1, message = "1 이상이 정상입니다") int page,
-            @RequestParam(defaultValue = "10")
-            @Min(value = 1, message = "일정이 한 개는 나와야죠")
-            @Max(value = 30, message = "30개 이상은 지원 안 합니다") int size
+            @PageableDefault(size = 10) Pageable pageable
     ) {
-        // 400 처리
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(scheduleService.findPage(userName, page, size));
+        if (pageable.getPageSize() > 30) {
+            throw new IllegalArgumentException("30개 이상은 지원 안 합니다");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(scheduleService.findPage(userName, pageable));
     }
 
     // 일정 수정: 작성자만 수정 가능 로그인 필요

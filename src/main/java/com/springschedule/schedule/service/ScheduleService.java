@@ -10,6 +10,7 @@ import com.springschedule.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,18 +53,18 @@ public class ScheduleService {
     }
 
     // 일정 목록 조회
-    public Page<ScheduleResponse> findPage(String userName, int page, int size) {
-        // page 1부터를 0으로 변환하고 정렬 조건 적용
-        PageRequest pageable = PageRequest.of(
-                page - 1,
-                size,
+    public Page<ScheduleResponse> findPage(String userName, Pageable pageable) {
+
+        Pageable sortedPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
                 Sort.by(Sort.Direction.DESC, "modifiedAt")
         );
 
         // 작성자 필터가 없으면 전체 조회, 있으면 작성자 이름으로 필터링
         Page<Schedule> schedulesPage = (userName == null || userName.isBlank())
-                ? scheduleRepository.findAllByDeletedAtIsNull(pageable)
-                : scheduleRepository.findByUser_UserNameAndDeletedAtIsNull(userName, pageable);
+                ? scheduleRepository.findAllByDeletedAtIsNull(sortedPageable)
+                : scheduleRepository.findByUser_UserNameAndDeletedAtIsNull(userName, sortedPageable);
 
         // 현재 페이지에 포함된 일정 ID 목록 추출
         List<Long> scheduleIds = schedulesPage.getContent().stream()

@@ -39,4 +39,11 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/test")
+    public ResponseEntity<Void> test(
+            @SessionAttribute(name = "loginUserId") Long loginUserId
+    ) {
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
 }

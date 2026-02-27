@@ -19,11 +19,9 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
 
     public void login(LoginRequest request, HttpSession session) {
-        User user = userRepository.findByEmail(request.getEmail());
-
-        if (user == null) {
-            throw new UnauthorizedException("이메일 또는 비밀번호가 올바르지 않습니다");
-        }
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(
+                () -> new UnauthorizedException("이메일 또는 비밀번호가 올바르지 않습니다")
+        );
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new UnauthorizedException("이메일 또는 비밀번호가 올바르지 않습니다");
